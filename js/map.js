@@ -24,7 +24,7 @@ var pins = {
     }
 };
 
-function drawPin(pin, fill) {
+function drawPin(pin, isFilling) {
     ctx.save();
     ctx.translate(pin.x, pin.y); 
     ctx.beginPath();
@@ -38,13 +38,17 @@ function drawPin(pin, fill) {
         ctx.lineWidth = 1.5; 
         ctx.stroke();
     }
-    ctx.beginPath();
+    // ctx.beginPath();
     ctx.arc(0, -21, pin.r, 0, 2 * Math.PI); 
-    ctx.closePath();
+    // ctx.closePath();
     if (fill) {
         ctx.fillStyle = "black";
         ctx.fill();
+        return; 
     }
+    return ctx.isPointInPath(/* mouseX, mouseY */);
+
+    //
     ctx.closePath();
     ctx.restore();
 }
