@@ -1,9 +1,11 @@
 var canvas = document.getElementById("mapCanvas");
 var ctx = canvas.getContext("2d");
 var bcr = canvas.getBoundingClientRect();
+var ratio = 1.25;
 
 window.onload = function() {
     document.body.addEventListener("mousemove", collisionListener);
+    canvas.height = canvas.width * ratio;
 
     // Can make this dynamic 
     var mapImg = new Image();
@@ -12,7 +14,7 @@ window.onload = function() {
         ctx.drawImage(mapImg, 0, 0);
         drawPins(pins);
     };
-}
+}   
 
 // Read these in from an external json/geojson file 
 var pins = {
@@ -24,7 +26,7 @@ var pins = {
     }
 };
 
-function drawPin(pin, isFilling) {
+function drawPin(pin, fill) {
     ctx.save();
     ctx.translate(pin.x, pin.y); 
     ctx.beginPath();
@@ -46,10 +48,10 @@ function drawPin(pin, isFilling) {
         ctx.fill();
         return; 
     }
+    ctx.closePath();
     return ctx.isPointInPath(/* mouseX, mouseY */);
 
     //
-    ctx.closePath();
     ctx.restore();
 }
 
