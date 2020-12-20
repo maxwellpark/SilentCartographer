@@ -1,8 +1,10 @@
 var canvas = document.getElementById("mapCanvas");
 var ctx = canvas.getContext("2d");
-var bcr = canvas.getBoundingClientRect();
+var rect = canvas.getBoundingClientRect();
+var xRatio = canvas.width / rect.width; 
+var yRatio = canvas.height / rect.height;
 var ratio = 1.25;
-window.mousePos = { x: 0, y: 0 };
+var pointLength = 25; 
 
 window.onload = function() {
     document.body.addEventListener("mousemove", collisionListener);
@@ -14,7 +16,6 @@ window.onload = function() {
             x: e.offsetX,
             y: e.offsetY
         };
-        // console.log(window.mousePos);
     })
     // canvas.height = canvas.width * ratio;
 
@@ -23,9 +24,13 @@ window.onload = function() {
     mapImg.src = "../img/OSM_Export.png";
     mapImg.onload = function() {
         ctx.drawImage(mapImg, 0, 0);
-        drawPins(pins, false);
+        drawPins(pins);
     };
 }   
+
+window.onresize = function() {
+    rect = canvas.getBoundingClientRect();
+}
 
 // Read these in from an external json/geojson file 
 var pins = {
@@ -37,38 +42,25 @@ var pins = {
     }
 };
 
-function drawPin(pin, fill) {
-    ctx.save();
+// Todo: separate out into one method that draws, 
+// The other calls isPointInPath
+function drawPin(pin) {
     ctx.translate(pin.x, pin.y); 
     ctx.beginPath();
+    ctx.moveTo(0, 0); // try removing this 
+    ctx.arc(0, pointLength, pin.r, 0, 2 * Math.PI);
+    ctx.fillStyle = pin.colour; 
+    ctx.fill();
+    ctx.beginPath();
     ctx.moveTo(0, 0);
-    ctx.bezierCurveTo(2, -10, -20, -25, 0, -30);
-    ctx.bezierCurveTo(20, -25, -2, -10, 0, 0);
-    if (fill) {
-        ctx.fillStyle = pin.colour;
-        ctx.fill();
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 1.5; 
-        ctx.stroke();
-    }
-    // ctx.beginPath();
-    ctx.arc(0, -21, pin.r, 0, 2 * Math.PI); 
-    // ctx.closePath();
-    if (fill) {
-        ctx.fillStyle = "black";
-        ctx.fill();
-        return; 
-    }
-    ctx.closePath();
-    ctx.restore();
-    return ctx.isPointInPath(window.mousePos.x, window.mousePos.y);
-
-    //
+    ctx.lineTo(0, pointLength);
+    ctx.strokeStyle = pin.colour; 
+    ctx.stroke();
 }
 
 function drawPins(pins) {
     for (pin in pins) {
-        drawPin(pins[pin], true);
+        drawPin(pins[pin]);
     }
 }
 
@@ -81,9 +73,11 @@ function unhoverEffects() {
 }
 
 function isColliding(e, pin) {
-    xDist = e.offsetX - pin.x;
-    yDist = e.offsetY - pin.y + 30; // const 
-    dist = Math.sqrt((xDist ** 2) + (yDist ** 2));
+    let xDist = (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width - pin.x;
+    let yDist = (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height - pin.y - pointLength; 
+    // let xDist = e.offsetX - pin.x;
+    // let yDist = e.offsetY - pin.y - pointLength; // const 
+    let dist = Math.sqrt((xDist ** 2) + (yDist ** 2));
     return dist <= pin.r; 
 }
 
@@ -92,13 +86,6 @@ function isInPath(e, pin) {}
 function collisionListener(e) {
     e.preventDefault();
     for (pin in pins) {
-        // if (drawPin(pins[pin], false)) {
-        //     hoverEffects();
-        //     return;
-        // }
-        // else {
-        //     unhoverEffects();
-        // }
         if (isColliding(e, pins[pin])) {
             hoverEffects();
             return;

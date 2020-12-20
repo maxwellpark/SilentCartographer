@@ -5,10 +5,10 @@ h1 {
 }
 
 #mapCanvas {
-    width: 100%;
+    /* width: 100%; */
 }   
 
 div.col-md-8.offset-2 > canvas {
-    justify-content: center;
-    padding: 128px 0px 128px 0px;
+    /* justify-content: center;
+    padding: 128px 0px 128px 0px; */
 }
