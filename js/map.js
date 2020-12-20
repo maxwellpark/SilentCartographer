@@ -2,17 +2,28 @@ var canvas = document.getElementById("mapCanvas");
 var ctx = canvas.getContext("2d");
 var bcr = canvas.getBoundingClientRect();
 var ratio = 1.25;
+window.mousePos = { x: 0, y: 0 };
 
 window.onload = function() {
     document.body.addEventListener("mousemove", collisionListener);
-    canvas.height = canvas.width * ratio;
+    document.body.addEventListener("mousemove", function(e) {
+        // delay with timeout?
+        window.mousePos = {
+            // x: e.pageX,
+            // y: e.pageY
+            x: e.offsetX,
+            y: e.offsetY
+        };
+        // console.log(window.mousePos);
+    })
+    // canvas.height = canvas.width * ratio;
 
     // Can make this dynamic 
     var mapImg = new Image();
     mapImg.src = "../img/OSM_Export.png";
     mapImg.onload = function() {
         ctx.drawImage(mapImg, 0, 0);
-        drawPins(pins);
+        drawPins(pins, false);
     };
 }   
 
@@ -49,10 +60,10 @@ function drawPin(pin, fill) {
         return; 
     }
     ctx.closePath();
-    return ctx.isPointInPath(/* mouseX, mouseY */);
+    ctx.restore();
+    return ctx.isPointInPath(window.mousePos.x, window.mousePos.y);
 
     //
-    ctx.restore();
 }
 
 function drawPins(pins) {
@@ -71,14 +82,23 @@ function unhoverEffects() {
 
 function isColliding(e, pin) {
     xDist = e.offsetX - pin.x;
-    yDist = e.offsetY - pin.y - 4.5; // const 
+    yDist = e.offsetY - pin.y + 30; // const 
     dist = Math.sqrt((xDist ** 2) + (yDist ** 2));
     return dist <= pin.r; 
 }
 
+function isInPath(e, pin) {}
+
 function collisionListener(e) {
     e.preventDefault();
     for (pin in pins) {
+        // if (drawPin(pins[pin], false)) {
+        //     hoverEffects();
+        //     return;
+        // }
+        // else {
+        //     unhoverEffects();
+        // }
         if (isColliding(e, pins[pin])) {
             hoverEffects();
             return;

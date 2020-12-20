@@ -1,9 +1,14 @@
 h1 {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     color: red; 
+    text-align: center;
 }
 
 #mapCanvas {
-    width: 75%;
-}
+    width: 100%;
+}   
 
+div.col-md-8.offset-2 > canvas {
+    justify-content: center;
+    padding: 128px 0px 128px 0px;
+}
