@@ -1,10 +1,12 @@
 var canvas = document.getElementById("mapCanvas");
 var ctx = canvas.getContext("2d");
 var rect = canvas.getBoundingClientRect();
+var coordsContainer = document.getElementById("coordContainer");
 var xRatio = canvas.width / rect.width; 
 var yRatio = canvas.height / rect.height;
 var ratio = 1.25;
-var pointLength = 25; 
+var pointLength = 12; // rename  
+var pointWidth = 2;
 
 window.onload = function() {
     document.body.addEventListener("mousemove", collisionListener);
@@ -26,6 +28,8 @@ window.onload = function() {
         ctx.drawImage(mapImg, 0, 0);
         drawPins(pins);
     };
+
+    addCoordParagraphs();
 }   
 
 window.onresize = function() {
@@ -42,19 +46,30 @@ var pins = {
     }
 };
 
+function addCoordParagraphs() 
+{
+    for (pin in pins) {
+        var node = document.createElement("p");
+        node.innerText = `${pins[pin].x}, ${pins[pin].y}`;
+        coordsContainer.appendChild(node);
+    }
+}
+
 // Todo: separate out into one method that draws, 
 // The other calls isPointInPath
 function drawPin(pin) {
-    ctx.translate(pin.x, pin.y); 
+    // ctx.translate(pin.x, pin.y); 
     ctx.beginPath();
-    ctx.moveTo(0, 0); // try removing this 
-    ctx.arc(0, pointLength, pin.r, 0, 2 * Math.PI);
+    // ctx.moveTo(0, 0); // try removing this 
+    ctx.moveTo(pin.x, pin.y);
+    ctx.arc(pin.x, pin.y - pointLength, pin.r, 0, 2 * Math.PI);
     ctx.fillStyle = pin.colour; 
     ctx.fill();
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, pointLength);
-    ctx.strokeStyle = pin.colour; 
+    ctx.moveTo(pin.x, pin.y - pointLength);
+    ctx.lineWidth = pointWidth;
+    ctx.lineTo(pin.x, pin.y);
+    ctx.strokeStyle = pin.colour;
     ctx.stroke();
 }
 
