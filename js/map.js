@@ -1,16 +1,24 @@
 var canvas = document.getElementById("mapCanvas");
 var ctx = canvas.getContext("2d");
 var rect = canvas.getBoundingClientRect();
+var mapImg;
+
 var coordsContainer = document.getElementById("coordContainer");
-var xRatio = canvas.width / rect.width; 
+var xRatio = canvas.width / rect.width;
 var yRatio = canvas.height / rect.height;
 var ratio = 1.25;
 var pointLength = 12; // rename  
 var pointWidth = 2;
 
-window.onload = function() {
+var startingRect = canvas.getBoundingClientRect();
+var canvasStartingWidth = rect.width; // rename baseline/original
+var canvasStartingHeight = rect.height;
+var canvasCurrentWidth = canvasStartingWidth;
+var canvasCurrentHeight = canvasStartingHeight;
+
+window.onload = function () {
     document.body.addEventListener("mousemove", collisionListener);
-    document.body.addEventListener("mousemove", function(e) {
+    document.body.addEventListener("mousemove", function (e) {
         // delay with timeout?
         window.mousePos = {
             // x: e.pageX,
@@ -22,18 +30,32 @@ window.onload = function() {
     // canvas.height = canvas.width * ratio;
 
     // Can make this dynamic 
-    var mapImg = new Image();
+    mapImg = new Image();
     mapImg.src = "../img/OSM_Export.png";
-    mapImg.onload = function() {
+    mapImg.onload = function () {
         ctx.drawImage(mapImg, 0, 0);
         drawPins(pins);
     };
 
     addCoordParagraphs();
-}   
+}
 
-window.onresize = function() {
+window.onresize = function () {
     rect = canvas.getBoundingClientRect();
+    let xFactor = rect.width / startingRect.width;
+    let yFactor = rect.height / startingRect.height;
+
+    for (pin in pins) {
+        pins[pin].x *= xFactor;
+        pins[pin].y *= yFactor;
+        console.log("New xy: ", pins[pin].x, pins[pin].y);
+    }
+
+    ctx.drawImage(mapImg, 0, 0);
+    drawPins(pins);
+
+    // Might have to redraw the bg img too
+
 }
 
 // Read these in from an external json/geojson file 
@@ -46,8 +68,7 @@ var pins = {
     }
 };
 
-function addCoordParagraphs() 
-{
+function addCoordParagraphs() {
     for (pin in pins) {
         var node = document.createElement("p");
         node.innerText = `${pins[pin].x}, ${pins[pin].y}`;
@@ -63,7 +84,7 @@ function drawPin(pin) {
     // ctx.moveTo(0, 0); // try removing this 
     ctx.moveTo(pin.x, pin.y);
     ctx.arc(pin.x, pin.y - pointLength, pin.r, 0, 2 * Math.PI);
-    ctx.fillStyle = pin.colour; 
+    ctx.fillStyle = pin.colour;
     ctx.fill();
     ctx.beginPath();
     ctx.moveTo(pin.x, pin.y - pointLength);
@@ -79,24 +100,35 @@ function drawPins(pins) {
     }
 }
 
+function erasePin(pin) {
+    // Prevent redrawing the bg img 
+    ctx.beginPath();
+    ctx.clearRect(x - radius - 1, y - radius - 1, radius * 2 + 2, radius * 2 + 2); // slightly larger than arc
+    ctx.closePath();
+}
+
+function redraw() {
+
+}
+
 function hoverEffects() {
     document.body.style.cursor = "pointer";
 }
 
 function unhoverEffects() {
-    document.body.style.cursor = "auto"; 
+    document.body.style.cursor = "auto";
 }
 
 function isColliding(e, pin) {
     let xDist = (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width - pin.x;
-    let yDist = (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height - pin.y - pointLength; 
+    let yDist = (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height - pin.y - pointLength;
     // let xDist = e.offsetX - pin.x;
     // let yDist = e.offsetY - pin.y - pointLength; // const 
     let dist = Math.sqrt((xDist ** 2) + (yDist ** 2));
-    return dist <= pin.r; 
+    return dist <= pin.r;
 }
 
-function isInPath(e, pin) {}
+function isInPath(e, pin) { }
 
 function collisionListener(e) {
     e.preventDefault();
@@ -109,4 +141,8 @@ function collisionListener(e) {
             unhoverEffects();
         }
     }
+}
+
+function resizeCanvas() {
+
 }
